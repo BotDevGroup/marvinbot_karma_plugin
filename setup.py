@@ -16,23 +16,23 @@ test_requirements = [
 ]
 
 setup(
-    name='marvinbot_karma_plugin',
+    name='karma_plugin',
     version='0.1.0',
     description="A plugin for marvinbot to track karma.",
-    long_description=readme + '\n\n' + history,
+    long_description=readme,
     author="Ricardo Cabral",
     author_email='ricardo.arturo.cabral@gmail.com',
-    url='https://github.com/Cameri/marvinbot_karma_plugin',
+    url='https://github.com/Cameri/karma_plugin',
     packages=[
-        'marvinbot_karma_plugin',
+        'karma_plugin',
     ],
-    package_dir={'marvinbot_karma_plugin':
-                 'marvinbot_karma_plugin'},
+    package_dir={'karma_plugin':
+                 'karma_plugin'},
     include_package_data=True,
     install_requires=requirements,
     license="MIT license",
     zip_safe=False,
-    keywords='marvinbot_karma_plugin',
+    keywords='karma_plugin',
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
         'Intended Audience :: Developers',
