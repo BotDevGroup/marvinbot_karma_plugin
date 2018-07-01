@@ -4,13 +4,13 @@ KARMA_NOT_SAVED = "❌ Unable to save karma."
 
 KARMA_NOT_FOUND = "❌ This user has no karma."
 
-KARMA_LOVERS = "*Lovers*:\n{lovers}"
+KARMA_LOVERS = "*Top lovers*:\n{users}"
 
-KARMA_LOVED_ONES = "*Lovers*:\n{loved_ones}"
+KARMA_LOVED_ONES = "*Top loved ones*:\n{users}"
 
-KARMA_HATERS = "*Lovers*:\n{haters}"
+KARMA_HATERS = "*Top haters*:\n{users}"
 
-KARMA_HATED_ONES = "*Lovers*:\n{hated_ones}"
+KARMA_HATED_ONES = "*Top hated ones*:\n{users}"
 
 NO_LOVERS = "❌ There are no lovers here."
 

@@ -43,6 +43,10 @@ class KarmaPlugin(Plugin):
             'lovers', self.on_lovers_command,
             command_description='Displays the top 10 lovers.')
         )
+        self.add_handler(CommandHandler(
+            'haters', self.on_haters_command,
+            command_description='Displays the top 10 haters.')
+        )
         self.add_handler(MessageHandler([
             CommonFilters.text,
             CommonFilters.reply,
@@ -53,6 +57,26 @@ class KarmaPlugin(Plugin):
             CommonFilters.reply,
             RegexpFilter(DOWNVOTE_PATTERNS[0])
         ], self.on_downvote), priority=90)
+
+    def on_haters_command(self, update):
+        message = update.effective_message
+        chat_id = message.chat.id
+
+        results = [result.value for result in list(Karma.get_haters(chat_id))]
+        if (len(results) == 0):
+            message.reply_text(text=NO_HATERS)
+            return
+
+        sorted(results, key=lambda result: result.get('karma'), reverse=True)
+        users = '\n'.join([
+            '{first_name} (-{karma})'.format(
+                first_name=result.get('first_name'),
+                karma=int(result.get('karma'))
+            )
+            for result in results
+        ])
+        message.reply_text(text=KARMA_HATERS.format(users=users),
+                           parse_mode='Markdown')
 
     def on_lovers_command(self, update):
         message = update.effective_message
@@ -65,11 +89,14 @@ class KarmaPlugin(Plugin):
 
         sorted(results, key=lambda result: result.get('karma'), reverse=True)
 
-        lovers = '\n'.join([
-            '{first_name} ({karma})'.format(**result)
+        users = '\n'.join([
+            '{first_name} (+{karma})'.format(
+                first_name=result.get('first_name'),
+                karma=int(result.get('karma'))
+            )
             for result in results
         ])
-        message.reply_text(text=KARMA_LOVERS.format(lovers=lovers),
+        message.reply_text(text=KARMA_LOVERS.format(users=users),
                            parse_mode='Markdown')
 
     def on_upvote(self, update):
