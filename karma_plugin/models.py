@@ -44,6 +44,31 @@ function (key, values) {
             return None
 
     @classmethod
+    def get_loved(cls, chat_id):
+        map_f = """
+function () {
+    emit (this.receiver_user_id, {
+        karma: 1,
+        first_name: this.receiver_first_name
+    })
+}
+"""
+        reduce_f = """
+function (key, values) {
+    return { karma: values.length, first_name: values[values.length - 1].first_name }
+}
+"""
+        last_quarter = localized_date() - timedelta(days=90)
+        try:
+            return cls.objects(
+                chat_id=chat_id,
+                vote__gt=0,
+                date_added__gte=last_quarter
+            ).map_reduce(map_f, reduce_f, 'inline')
+        except:
+            return None
+
+    @classmethod
     def get_haters(cls, chat_id):
         map_f = """
 function () {
@@ -55,7 +80,32 @@ function () {
 """
         reduce_f = """
 function (key, values) {
-    return { karma: values.length, first_name: values[values.length - 1].first_name, woot: 1 }
+    return { karma: values.length, first_name: values[values.length - 1].first_name }
+}
+"""
+        last_quarter = localized_date() - timedelta(days=90)
+        try:
+            return cls.objects(
+                chat_id=chat_id,
+                vote__lt=0,
+                date_added__gte=last_quarter
+            ).map_reduce(map_f, reduce_f, 'inline')
+        except:
+            return None
+
+    @classmethod
+    def get_hated(cls, chat_id):
+        map_f = """
+function () {
+    emit (this.receiver_user_id, {
+        karma: 1,
+        first_name: this.receiver_first_name
+    })
+}
+"""
+        reduce_f = """
+function (key, values) {
+    return { karma: values.length, first_name: values[values.length - 1].first_name }
 }
 """
         last_quarter = localized_date() - timedelta(days=90)

@@ -47,6 +47,14 @@ class KarmaPlugin(Plugin):
             'haters', self.on_haters_command,
             command_description='Displays the top 10 haters.')
         )
+        self.add_handler(CommandHandler(
+            'loved', self.on_loved_command,
+            command_description='Displays the top 10 loved users.')
+        )
+        self.add_handler(CommandHandler(
+            'hated', self.on_hated_command,
+            command_description='Displays the top 10 hated users.')
+        )
         self.add_handler(MessageHandler([
             CommonFilters.text,
             CommonFilters.reply,
@@ -58,32 +66,12 @@ class KarmaPlugin(Plugin):
             RegexpFilter(DOWNVOTE_PATTERNS[0])
         ], self.on_downvote), priority=90)
 
-    def on_haters_command(self, update):
-        message = update.effective_message
-        chat_id = message.chat.id
-
-        results = [result.value for result in list(Karma.get_haters(chat_id))]
-        if (len(results) == 0):
-            message.reply_text(text=NO_HATERS)
-            return
-
-        sorted(results, key=lambda result: result.get('karma'), reverse=True)
-        users = '\n'.join([
-            '{first_name} (-{karma})'.format(
-                first_name=result.get('first_name'),
-                karma=int(result.get('karma'))
-            )
-            for result in results
-        ])
-        message.reply_text(text=KARMA_HATERS.format(users=users),
-                           parse_mode='Markdown')
-
     def on_lovers_command(self, update):
         message = update.effective_message
         chat_id = message.chat.id
 
         results = [result.value for result in list(Karma.get_lovers(chat_id))]
-        if (len(results) == 0):
+        if len(results) == 0:
             message.reply_text(text=NO_LOVERS)
             return
 
@@ -99,6 +87,67 @@ class KarmaPlugin(Plugin):
         message.reply_text(text=KARMA_LOVERS.format(users=users),
                            parse_mode='Markdown')
 
+    def on_loved_command(self, update):
+        message = update.effective_message
+        chat_id = message.chat.id
+
+        results = [result.value for result in list(Karma.get_loved(chat_id))]
+        if len(results) == 0:
+            message.reply_text(text=NO_LOVED_ONES)
+            return
+
+        sorted(results, key=lambda result: result.get('karma'), reverse=True)
+
+        users = '\n'.join([
+            '{first_name} (+{karma})'.format(
+                first_name=result.get('first_name'),
+                karma=int(result.get('karma'))
+            )
+            for result in results
+        ])
+        message.reply_text(text=KARMA_LOVED_ONES.format(users=users),
+                           parse_mode='Markdown')
+
+    def on_haters_command(self, update):
+        message = update.effective_message
+        chat_id = message.chat.id
+
+        results = [result.value for result in list(Karma.get_haters(chat_id))]
+        if len(results) == 0:
+            message.reply_text(text=NO_HATERS)
+            return
+
+        sorted(results, key=lambda result: result.get('karma'), reverse=True)
+        users = '\n'.join([
+            '{first_name} (-{karma})'.format(
+                first_name=result.get('first_name'),
+                karma=int(result.get('karma'))
+            )
+            for result in results
+        ])
+        message.reply_text(text=KARMA_HATERS.format(users=users),
+                           parse_mode='Markdown')
+
+    def on_hated_command(self, update):
+        message = update.effective_message
+        chat_id = message.chat.id
+
+        results = [result.value for result in list(Karma.get_hated(chat_id))]
+        if len(results) == 0:
+            message.reply_text(text=NO_HATED_ONES)
+            return
+
+        sorted(results, key=lambda result: result.get('karma'), reverse=True)
+        users = '\n'.join([
+            '{first_name} (-{karma})'.format(
+                first_name=result.get('first_name'),
+                karma=int(result.get('karma'))
+            )
+            for result in results
+        ])
+        message.reply_text(text=KARMA_HATED_ONES.format(users=users),
+                           parse_mode='Markdown')
+
     def on_upvote(self, update):
         self.do_vote(update, 1)
 
@@ -111,7 +160,7 @@ class KarmaPlugin(Plugin):
         user_id = message.reply_to_message.from_user.id if message.reply_to_message else message.from_user.id
 
         results = list(Karma.get_user_karma(chat_id, user_id))
-        if (len(results) == 0):
+        if len(results) == 0:
             message.reply_text(text=KARMA_NOT_FOUND)
             return
 
