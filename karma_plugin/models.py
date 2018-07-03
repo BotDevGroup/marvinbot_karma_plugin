@@ -2,6 +2,21 @@ import mongoengine
 from marvinbot.utils import localized_date
 from datetime import timedelta
 
+aggregate_map_f = """
+function () {{
+    emit (this.{who}_user_id, {{
+        karma: 1,
+        first_name: this.{who}_first_name
+    }})
+}}
+"""
+
+aggregate_reduce_f = """
+function (key, values) {
+    return { karma: values.length, first_name: values[values.length - 1].first_name }
+}
+"""
+
 class Karma(mongoengine.Document):
     id = mongoengine.SequenceField(primary_key=True)
 
@@ -18,103 +33,51 @@ class Karma(mongoengine.Document):
 
     date_added = mongoengine.DateTimeField(default=localized_date)
 
+    @staticmethod
+    def get_last_quarter():
+        return localized_date() - timedelta(days=90)
+
     @classmethod
     def get_lovers(cls, chat_id):
-        map_f = """
-function () {
-    emit (this.giver_user_id, {
-        karma: 1,
-        first_name: this.giver_first_name
-    })
-}
-"""
-        reduce_f = """
-function (key, values) {
-    return { karma: values.length, first_name: values[values.length - 1].first_name }
-}
-"""
-        last_quarter = localized_date() - timedelta(days=90)
         try:
             return cls.objects(
                 chat_id=chat_id,
                 vote__gt=0,
-                date_added__gte=last_quarter
-            ).map_reduce(map_f, reduce_f, 'inline')
+                date_added__gte=Karma.get_last_quarter()
+            ).map_reduce(aggregate_map_f.format(who='giver'), aggregate_reduce_f, 'inline')
         except:
             return None
 
     @classmethod
     def get_loved(cls, chat_id):
-        map_f = """
-function () {
-    emit (this.receiver_user_id, {
-        karma: 1,
-        first_name: this.receiver_first_name
-    })
-}
-"""
-        reduce_f = """
-function (key, values) {
-    return { karma: values.length, first_name: values[values.length - 1].first_name }
-}
-"""
-        last_quarter = localized_date() - timedelta(days=90)
         try:
             return cls.objects(
                 chat_id=chat_id,
                 vote__gt=0,
-                date_added__gte=last_quarter
-            ).map_reduce(map_f, reduce_f, 'inline')
+                date_added__gte=Karma.get_last_quarter()
+            ).map_reduce(aggregate_map_f.format(who='receiver'), aggregate_reduce_f, 'inline')
         except:
             return None
 
     @classmethod
     def get_haters(cls, chat_id):
-        map_f = """
-function () {
-    emit (this.giver_user_id, {
-        karma: 1,
-        first_name: this.giver_first_name
-    })
-}
-"""
-        reduce_f = """
-function (key, values) {
-    return { karma: values.length, first_name: values[values.length - 1].first_name }
-}
-"""
-        last_quarter = localized_date() - timedelta(days=90)
         try:
             return cls.objects(
                 chat_id=chat_id,
                 vote__lt=0,
-                date_added__gte=last_quarter
-            ).map_reduce(map_f, reduce_f, 'inline')
+                date_added__gte=Karma.get_last_quarter()
+            ).map_reduce(aggregate_map_f.format(who='giver'), aggregate_reduce_f, 'inline')
         except:
             return None
 
     @classmethod
     def get_hated(cls, chat_id):
-        map_f = """
-function () {
-    emit (this.receiver_user_id, {
-        karma: 1,
-        first_name: this.receiver_first_name
-    })
-}
-"""
-        reduce_f = """
-function (key, values) {
-    return { karma: values.length, first_name: values[values.length - 1].first_name }
-}
-"""
-        last_quarter = localized_date() - timedelta(days=90)
         try:
             return cls.objects(
                 chat_id=chat_id,
                 vote__lt=0,
-                date_added__gte=last_quarter
-            ).map_reduce(map_f, reduce_f, 'inline')
+                date_added__gte=Karma.get_last_quarter()
+            ).map_reduce(aggregate_map_f.format(who='receiver'), aggregate_reduce_f, 'inline')
         except:
             return None
 
@@ -177,12 +140,11 @@ function (key, values) {
     return response
 }
 """
-        last_quarter = localized_date() - timedelta(days=90)
         try:
             return cls.objects(
                 chat_id=chat_id,
                 receiver_user_id=receiver_user_id,
-                date_added__gte=last_quarter
+                date_added__gte=Karma.get_last_quarter()
             ).map_reduce(map_f, reduce_f, 'inline')
         except:
             return None
