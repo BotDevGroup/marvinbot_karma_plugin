@@ -7,8 +7,8 @@ with open('README.rst') as readme_file:
     readme = readme_file.read()
 
 requirements = [
-    'marvinbot'
-    # TODO: put package requirements here
+    'marvinbot',
+    'tabulate'
 ]
 
 test_requirements = [
