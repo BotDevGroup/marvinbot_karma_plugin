@@ -7,6 +7,9 @@ from karma_plugin.models import Karma
 from karma_plugin.templates import *
 import logging
 import json
+import tabulate
+
+tabulate.MIN_PADDING = 0
 
 log = logging.getLogger(__name__)
 
@@ -55,6 +58,10 @@ class KarmaPlugin(Plugin):
             'hated', self.on_hated_command,
             command_description='Displays the top 10 hated users.')
         )
+        self.add_handler(CommandHandler(
+            'karmareport', self.on_karmareport_command,
+            command_description='Displays the karma report.')
+        )
         self.add_handler(MessageHandler([
             CommonFilters.text,
             CommonFilters.reply,
@@ -65,6 +72,34 @@ class KarmaPlugin(Plugin):
             CommonFilters.reply,
             RegexpFilter(DOWNVOTE_PATTERNS[0])
         ], self.on_downvote), priority=90)
+
+    def on_karmareport_command(self, update):
+        message = update.effective_message
+        chat_id = message.chat.id
+
+        results = [result.value for result in list(Karma.get_report(chat_id))]
+        if len(results) == 0:
+            return
+        results.sort(key=lambda result: result.get(
+            'received').get('positive'), reverse=True)
+        table = tabulate.tabulate([
+            [
+                trim_markdown(result.get('first_name')[:16]),
+                result.get('received').get('positive'),
+                result.get('received').get('negative'),
+                result.get('given').get('positive'),
+                result.get('given').get('negative')
+            ]
+            for result in results
+        ],
+            headers=['Name', "Recvd\n+1", "Recvd\n-1", "Given\n+1", "Given\n-1"],
+            tablefmt="fancy_grid")
+        text = """```
+{}
+```
+""".format(table)
+
+        message.reply_text(text=text, parse_mode='Markdown')
 
     def on_lovers_command(self, update):
         message = update.effective_message

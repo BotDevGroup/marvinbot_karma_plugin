@@ -1,3 +1,4 @@
+# pylint: disable=E1101
 import mongoengine
 from marvinbot.utils import localized_date
 from datetime import timedelta
@@ -13,9 +14,13 @@ function () {{
 
 aggregate_reduce_f = """
 function (key, values) {
-    return { karma: values.length, first_name: values[values.length - 1].first_name }
+    return {
+        karma: Array.sum(values.map(v => v.karma)),
+        first_name: values[values.length - 1].first_name
+    }
 }
 """
+
 
 class Karma(mongoengine.Document):
     id = mongoengine.SequenceField(primary_key=True)
@@ -36,6 +41,58 @@ class Karma(mongoengine.Document):
     @staticmethod
     def get_last_quarter():
         return localized_date() - timedelta(days=90)
+
+    @classmethod
+    def get_report(cls, chat_id):
+        map_f = """
+function () {
+    emit(this.receiver_user_id, {
+        first_name: this.receiver_first_name,
+        given: {
+            positive: 0,
+            negative: 0
+        },
+        received: {
+            positive: this.vote > 0 ? 1 : 0,
+            negative: this.vote < 0 ? 1 : 0
+        }
+    })
+    emit(this.giver_user_id, {
+        first_name: this.giver_first_name,
+        given: {
+            positive: this.vote > 0 ? 1 : 0,
+            negative: this.vote < 0 ? 1 : 0
+        },
+        received: {
+            positive: 0,
+            negative: 0
+        }
+    })
+}
+"""
+
+        reduce_f = """
+function (key, values) {
+    return {
+        first_name: values[0].first_name,
+        given: {
+            positive: Array.sum(values.map(v => v.given.positive)),
+            negative: Array.sum(values.map(v => v.given.negative))
+        },
+        received: {
+            positive: Array.sum(values.map(v => v.received.positive)),
+            negative: Array.sum(values.map(v => v.received.negative))
+        }
+    }
+}
+"""
+        try:
+            return cls.objects(
+                chat_id=chat_id,
+                date_added__gte=Karma.get_last_quarter()
+            ).map_reduce(map_f, reduce_f, 'inline')
+        except:
+            return None
 
     @classmethod
     def get_lovers(cls, chat_id):
