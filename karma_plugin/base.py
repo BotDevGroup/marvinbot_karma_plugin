@@ -13,13 +13,9 @@ tabulate.MIN_PADDING = 0
 
 log = logging.getLogger(__name__)
 
-UPVOTE_PATTERNS = [
-    r'^\+(?!0+)(\d+)'
-]
+UPVOTE_PATTERN = r'^(\+(?!0+)(\d+)|rt)'
 
-DOWNVOTE_PATTERNS = [
-    r'^-(?!0+)(\d+)'
-]
+DOWNVOTE_PATTERN = r'^-(?!0+)(\d+)'
 
 
 class KarmaPlugin(Plugin):
@@ -65,12 +61,12 @@ class KarmaPlugin(Plugin):
         self.add_handler(MessageHandler([
             CommonFilters.text,
             CommonFilters.reply,
-            RegexpFilter(UPVOTE_PATTERNS[0])
+            RegexpFilter(UPVOTE_PATTERN)
         ], self.on_upvote), priority=90)
         self.add_handler(MessageHandler([
             CommonFilters.text,
             CommonFilters.reply,
-            RegexpFilter(DOWNVOTE_PATTERNS[0])
+            RegexpFilter(DOWNVOTE_PATTERN)
         ], self.on_downvote), priority=90)
 
     def on_karmareport_command(self, update):
