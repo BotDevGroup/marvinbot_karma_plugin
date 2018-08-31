@@ -1,5 +1,7 @@
 NOT_POSSIBLE = "❌ Not possible."
 
+NO_KARMA = "❌ This chat has no karma."
+
 KARMA_NOT_SAVED = "❌ Unable to save karma."
 
 KARMA_NOT_FOUND = "❌ This user has no karma."

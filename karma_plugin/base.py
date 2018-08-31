@@ -76,7 +76,9 @@ class KarmaPlugin(Plugin):
 
         results = [result.value for result in list(Karma.get_report(chat_id))]
         if len(results) == 0:
+            message.reply_text(text=NO_KARMA)
             return
+
         results.sort(key=lambda result: result.get(
             'received').get('positive'), reverse=True)
         table = tabulate.tabulate([
