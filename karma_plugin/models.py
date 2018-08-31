@@ -142,59 +142,90 @@ function (key, values) {
     def get_user_karma(cls, chat_id, receiver_user_id):
         map_f = """
 function () {
-    emit (this.receiver_user_id, {
-        receiver_user_id: this.receiver_user_id,
-        receiver_first_name: this.receiver_first_name,
-        giver_user_id: this.giver_user_id,
-        giver_first_name: this.giver_first_name,
-        karma: this.vote
+    const {
+        receiver_user_id,
+        receiver_first_name,
+        giver_user_id,
+        giver_first_name,
+        vote
+    } = this
+    const love = +(vote === 1)
+    const hate = 1 - love
+    const givers = {}
+    givers[giver_user_id] = {
+        giver_user_id,
+        first_name: giver_first_name,
+        love,
+        hate
+    }
+    emit (receiver_user_id, {
+        first_name: receiver_first_name,
+        love,
+        hate,
+        givers
     })
 }
 """
+
         reduce_f = """
 function (key, values) {
-    if (!values.length) {
-        return {
-            karma: 0
-        }
-    }
-    const response = {
-        receiver_first_name: values[values.length - 1].receiver_first_name,
-        karma: 0,
-        lovers: {
-            karma: 0,
-            givers: {}
-        },
-        haters: {
-            karma: 0,
-            givers: {}
-        }
-    }
-    for (let value of values) {
-        const w = ~value.karma ? 'lovers' : 'haters'
-        response.karma += ~value.karma ? 1 : -1
-        response[w].karma++
-        if (!response[w].givers[value.giver_user_id]) {
-            response[w].givers[value.giver_user_id] = {
-                user_id: `${value.giver_user_id}`,
-                first_name: value.giver_first_name,
-                karma: 0,
+    return values.reduce((prev, next) => {
+        const givers = Object.keys(next.givers).reduce((givers, giver_user_id) => {
+            if (!givers[giver_user_id]) {
+                givers[giver_user_id] = Object.assign({}, next.givers[giver_user_id])
+                return givers
             }
+
+            givers[giver_user_id] = Object.assign({}, givers[giver_user_id], {
+                love: givers[giver_user_id].love + next.givers[giver_user_id].love,
+                hate: givers[giver_user_id].hate + next.givers[giver_user_id].hate
+            })
+
+            return givers
+        }, prev.givers)
+
+        return {
+            first_name: prev.first_name || next.first_name,
+            love: prev.love + next.love,
+            hate: prev.hate + next.hate,
+            givers
         }
-        response[w].givers[value.giver_user_id].karma++
-    }
-    
-    ['lovers','haters'].forEach(function(w) {
-        response[w].givers = Object.keys(response[w].givers).map(function (giver_user_id) {
-            return response[w].givers[giver_user_id]
-        })
-        
-        response[w].givers.sort(function (a, b) {
-            return b.karma - a.karma
-        })
-        response[w].givers = response[w].givers.slice(0, 3)
+    }, {
+        first_name: "",
+        love: 0,
+        hate: 0,
+        givers: {}
     })
-    return response
+}
+"""
+
+        finalize_f = """
+function (key, report) {
+    function descending (key) {
+        return function (a, b) {
+            return b[key] - a[key]
+        }
+    }
+
+    const lovers = Object.keys(report.givers)
+        .map(giver_user_id => report.givers[giver_user_id])
+        .filter(g => g.love)
+        .sort(descending('love'))
+        .slice(0, 3)
+
+    const haters = Object.keys(report.givers)
+        .map(giver_user_id => report.givers[giver_user_id])
+        .filter(g => g.hate)
+        .sort(descending('hate'))
+        .slice(0, 3)
+
+    return {
+        first_name: report.first_name,
+        love: report.love,
+        hate: report.hate,
+        lovers,
+        haters
+    }
 }
 """
         try:
@@ -202,6 +233,6 @@ function (key, values) {
                 chat_id=chat_id,
                 receiver_user_id=receiver_user_id,
                 date_added__gte=Karma.get_last_quarter()
-            ).map_reduce(map_f, reduce_f, 'inline')
+            ).map_reduce(map_f, reduce_f, 'inline', finalize_f=finalize_f)
         except:
             return None

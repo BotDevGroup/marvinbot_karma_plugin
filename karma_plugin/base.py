@@ -91,7 +91,8 @@ class KarmaPlugin(Plugin):
             ]
             for result in results[:30]
         ],
-            headers=['Name', "Recvd\n+1", "Recvd\n-1", "Given\n+1", "Given\n-1"],
+            headers=['Name', "Recvd\n+1", "Recvd\n-1",
+                     "Given\n+1", "Given\n-1"],
             tablefmt="fancy_grid")
         text = """```
 {}
@@ -200,29 +201,34 @@ class KarmaPlugin(Plugin):
 
         for result in results:
             value = result.value
-            lovers = '_None_'
-            haters = '_None_'
-            if len(value.get('lovers')):
-                lovers = '\n'.join([
+
+            lovers = value.get('lovers', [])
+            haters = value.get('haters', [])
+
+            lovers_str = '\n'.join([
                     '{first_name} (+{karma})'.format(
                         first_name=giver.get('first_name'),
-                        karma=int(giver.get('karma'))
-                    ) for giver in value.get('lovers').get('givers')
-                ])
-            if len(value.get('haters')):
-                haters = '\n'.join([
+                        karma=int(giver.get('love'))
+                    ) for giver in lovers
+                ]) if len(lovers) else '_None_'
+
+            haters_str = '\n'.join([
                     '{first_name} (-{karma})'.format(
                         first_name=giver.get('first_name'),
-                        karma=int(giver.get('karma'))
-                    ) for giver in value.get('haters').get('givers')
-                ])
+                        karma=int(giver.get('hate'))
+                    ) for giver in haters
+                ]) if len(haters) else '_None_'
+
+            love = int(value.get('love', 0))
+            hate = int(value.get('hate', 0))
+
             text_vars = {
-                'receiver_first_name': value.get('receiver_first_name'),
-                'karma': int(value.get('karma')),
-                'positive': int(value.get('lovers').get('karma')),
-                'negative': int(value.get('haters').get('karma')),
-                'lovers': lovers,
-                'haters': haters
+                'receiver_first_name': value.get('first_name'),
+                'karma': love - hate,
+                'positive': love,
+                'negative': hate,
+                'lovers': lovers_str,
+                'haters': haters_str
             }
             message.reply_text(
                 text=SINGLE_USER_KARMA_SUMMARY.format(**text_vars),
