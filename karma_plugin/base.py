@@ -109,7 +109,7 @@ class KarmaPlugin(Plugin):
             message.reply_text(text=NO_LOVERS)
             return
 
-        sorted(results, key=lambda result: result.get('karma'), reverse=True)
+        results.sort(key=lambda result: result.get('karma'), reverse=True)
 
         users = '\n'.join([
             '{first_name} (+{karma})'.format(
@@ -130,7 +130,7 @@ class KarmaPlugin(Plugin):
             message.reply_text(text=NO_LOVED_ONES)
             return
 
-        sorted(results, key=lambda result: result.get('karma'), reverse=True)
+        results.sort(key=lambda result: result.get('karma'), reverse=True)
 
         users = '\n'.join([
             '{first_name} (+{karma})'.format(
@@ -151,7 +151,7 @@ class KarmaPlugin(Plugin):
             message.reply_text(text=NO_HATERS)
             return
 
-        sorted(results, key=lambda result: result.get('karma'), reverse=True)
+        results.sort(key=lambda result: result.get('karma'), reverse=True)
         users = '\n'.join([
             '{first_name} (-{karma})'.format(
                 first_name=result.get('first_name'),
@@ -171,7 +171,7 @@ class KarmaPlugin(Plugin):
             message.reply_text(text=NO_HATED_ONES)
             return
 
-        sorted(results, key=lambda result: result.get('karma'), reverse=True)
+        results.sort(key=lambda result: result.get('karma'), reverse=True)
         users = '\n'.join([
             '{first_name} (-{karma})'.format(
                 first_name=result.get('first_name'),
