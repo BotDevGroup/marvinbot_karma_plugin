@@ -116,7 +116,7 @@ class KarmaPlugin(Plugin):
                 first_name=result.get('first_name'),
                 karma=int(result.get('karma'))
             )
-            for result in results
+            for result in results[:10]
         ])
         message.reply_text(text=KARMA_LOVERS.format(users=users),
                            parse_mode='Markdown')
@@ -137,7 +137,7 @@ class KarmaPlugin(Plugin):
                 first_name=result.get('first_name'),
                 karma=int(result.get('karma'))
             )
-            for result in results
+            for result in results[:10]
         ])
         message.reply_text(text=KARMA_LOVED_ONES.format(users=users),
                            parse_mode='Markdown')
@@ -157,7 +157,7 @@ class KarmaPlugin(Plugin):
                 first_name=result.get('first_name'),
                 karma=int(result.get('karma'))
             )
-            for result in results
+            for result in results[:10]
         ])
         message.reply_text(text=KARMA_HATERS.format(users=users),
                            parse_mode='Markdown')
@@ -177,7 +177,7 @@ class KarmaPlugin(Plugin):
                 first_name=result.get('first_name'),
                 karma=int(result.get('karma'))
             )
-            for result in results
+            for result in results[:10]
         ])
         message.reply_text(text=KARMA_HATED_ONES.format(users=users),
                            parse_mode='Markdown')
