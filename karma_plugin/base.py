@@ -15,7 +15,7 @@ log = logging.getLogger(__name__)
 
 UPVOTE_PATTERN = r'^(\+(?!0+)(\d+)|rt)'
 
-DOWNVOTE_PATTERN = r'^-(?!0+)(\d+)'
+DOWNVOTE_PATTERN = r'(-(?!0+)(\d+)|old|menos uno)'
 
 
 class KarmaPlugin(Plugin):
