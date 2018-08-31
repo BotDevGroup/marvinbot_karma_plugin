@@ -89,7 +89,7 @@ class KarmaPlugin(Plugin):
                 result.get('given').get('positive'),
                 result.get('given').get('negative')
             ]
-            for result in results
+            for result in results[:30]
         ],
             headers=['Name', "Recvd\n+1", "Recvd\n-1", "Given\n+1", "Given\n-1"],
             tablefmt="fancy_grid")
