@@ -8,12 +8,13 @@ from karma_plugin.templates import *
 import logging
 import json
 import tabulate
+import re
 
 tabulate.MIN_PADDING = 0
 
 log = logging.getLogger(__name__)
 
-UPVOTE_PATTERN = r'^(\+(?!0+)(\d+)|rt)'
+UPVOTE_PATTERN = r'(\+(?!0+)(\d+)|rt)'
 
 DOWNVOTE_PATTERN = r'(-(?!0+)(\d+)|old|menos uno)'
 
@@ -61,12 +62,12 @@ class KarmaPlugin(Plugin):
         self.add_handler(MessageHandler([
             CommonFilters.text,
             CommonFilters.reply,
-            RegexpFilter(UPVOTE_PATTERN)
+            RegexpFilter(UPVOTE_PATTERN, flags=re.IGNORECASE)
         ], self.on_upvote), priority=90)
         self.add_handler(MessageHandler([
             CommonFilters.text,
             CommonFilters.reply,
-            RegexpFilter(DOWNVOTE_PATTERN)
+            RegexpFilter(DOWNVOTE_PATTERN, flags=re.IGNORECASE)
         ], self.on_downvote), priority=90)
 
     def on_karmareport_command(self, update):
