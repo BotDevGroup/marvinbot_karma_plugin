@@ -48,41 +48,43 @@ class Karma(mongoengine.Document):
 function () {
     emit(this.receiver_user_id, {
         first_name: this.receiver_first_name,
-        given: {
-            positive: 0,
-            negative: 0
-        },
-        received: {
-            positive: this.vote > 0 ? 1 : 0,
-            negative: this.vote < 0 ? 1 : 0
-        }
+        hate_received: this.vote < 0 ? 1 : 0,
+        love_received: this.vote > 0 ? 1 : 0,
+        hate_given: 0,
+        love_given: 0
     })
     emit(this.giver_user_id, {
         first_name: this.giver_first_name,
-        given: {
-            positive: this.vote > 0 ? 1 : 0,
-            negative: this.vote < 0 ? 1 : 0
-        },
-        received: {
-            positive: 0,
-            negative: 0
-        }
+        hate_given: this.vote < 0 ? 1 : 0,
+        love_given: this.vote > 0 ? 1 : 0,
+        hate_received: 0,
+        love_received: 0
     })
 }
 """
 
         reduce_f = """
 function (key, values) {
+    const { love_given, hate_given, love_received, hate_received } = values.reduce((prev, next) => {
+        return {
+            love_given: prev.love_given + next.love_given,
+            hate_given: prev.hate_given + next.hate_given,
+            love_received: prev.love_received + next.love_received,
+            hate_received: prev.hate_received + next.hate_received
+        }
+    }, {
+        love_given: 0,
+        hate_given: 0,
+        love_received: 0,
+        hate_received: 0
+    })
+
     return {
         first_name: values[0].first_name,
-        given: {
-            positive: Array.sum(values.map(v => v.given.positive)),
-            negative: Array.sum(values.map(v => v.given.negative))
-        },
-        received: {
-            positive: Array.sum(values.map(v => v.received.positive)),
-            negative: Array.sum(values.map(v => v.received.negative))
-        }
+        love_given,
+        hate_given,
+        love_received,
+        hate_received
     }
 }
 """

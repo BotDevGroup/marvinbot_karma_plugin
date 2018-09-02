@@ -22,6 +22,7 @@ DOWNVOTE_PATTERN = r'(-(?!0+)(\d+)|old|menos uno)'
 class KarmaPlugin(Plugin):
     def __init__(self):
         super(KarmaPlugin, self).__init__('karma')
+        self.config = {}
 
     def get_default_config(self):
         return {
@@ -31,7 +32,7 @@ class KarmaPlugin(Plugin):
 
     def configure(self, config):
         log.info("Initializing Karma plugin")
-        pass
+        self.config = config
 
     def setup_handlers(self, adapter):
         log.info("Setting up handlers for Karma plugin")
@@ -58,6 +59,7 @@ class KarmaPlugin(Plugin):
         self.add_handler(CommandHandler(
             'karmareport', self.on_karmareport_command,
             command_description='Displays the karma report.')
+            .add_argument('--inline', help='Displays the karma report inline.', action='store_true')
         )
         self.add_handler(MessageHandler([
             CommonFilters.text,
@@ -70,24 +72,37 @@ class KarmaPlugin(Plugin):
             RegexpFilter(DOWNVOTE_PATTERN, flags=re.IGNORECASE)
         ], self.on_downvote), priority=90)
 
-    def on_karmareport_command(self, update):
+    def provide_blueprint(self, config):
+        from .views import karma_app
+        return karma_app
+
+    @staticmethod
+    def get_karma_report(chat_id):
+        results = [result.value for result in list(Karma.get_report(chat_id))]
+        results.sort(key=lambda result: result.get('love_received'), reverse=True)
+        return results
+
+    def on_karmareport_command(self, update, inline):
         message = update.effective_message
         chat_id = message.chat.id
 
-        results = [result.value for result in list(Karma.get_report(chat_id))]
+        results = KarmaPlugin.get_karma_report(chat_id)
         if len(results) == 0:
             message.reply_text(text=NO_KARMA)
             return
 
-        results.sort(key=lambda result: result.get(
-            'received').get('positive'), reverse=True)
+        if not inline:
+            text = "[View report]({}/plugins/karma_plugin/{})".format(self.config.get('base_url'), chat_id)
+            message.reply_text(text=text, disable_web_page_preview=True, parse_mode='Markdown')
+            return
+
         table = tabulate.tabulate([
             [
                 trim_markdown(result.get('first_name')[:16]),
-                result.get('received').get('positive'),
-                result.get('received').get('negative'),
-                result.get('given').get('positive'),
-                result.get('given').get('negative')
+                result.get('love_received', 0),
+                result.get('hate_received', 0),
+                result.get('love_given', 0),
+                result.get('hate_given', 0)
             ]
             for result in results[:30]
         ],
