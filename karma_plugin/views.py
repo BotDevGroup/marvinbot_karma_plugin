@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template
 from karma_plugin import KarmaPlugin
 
-karma_app = Blueprint('karma_plugin', __name__, template_folder='templates')
+karma_app = Blueprint('karma', __name__, template_folder='templates')
 
 
 @karma_app.route('/<chat_id>', methods=['GET'])

@@ -92,7 +92,7 @@ class KarmaPlugin(Plugin):
             return
 
         if not inline:
-            text = "[View report]({}/plugins/karma_plugin/{})".format(self.config.get('base_url'), chat_id)
+            text = "[View report]({}/plugins/{}/{})".format(self.config.get('base_url'), self.name, chat_id)
             message.reply_text(text=text, disable_web_page_preview=True, parse_mode='Markdown')
             return
 
