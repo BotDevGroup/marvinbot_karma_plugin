@@ -18,7 +18,7 @@ NO_LOVERS = "❌ There are no lovers here."
 
 NO_LOVED_ONES = "❌ There are no loved ones here."
 
-NO_HATERS = "❌ There are no lovers here."
+NO_HATERS = "❌ There are no haters here."
 
 NO_HATED_ONES = "❌ There are no hated ones here."
 
