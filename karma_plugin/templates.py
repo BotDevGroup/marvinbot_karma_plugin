@@ -22,6 +22,8 @@ NO_HATERS = "❌ There are no haters here."
 
 NO_HATED_ONES = "❌ There are no hated ones here."
 
+DUPLICATE_KARMA = "❌ Karma already given for this message."
+
 POSITIVE_KARMA = "+1 karma for {receiver} given by {giver}."
 
 NEGATIVE_KARMA = "-1 karma for {receiver} given by {giver}."
