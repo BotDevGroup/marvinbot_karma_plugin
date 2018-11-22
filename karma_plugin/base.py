@@ -291,7 +291,7 @@ class KarmaPlugin(Plugin):
         self.hll.add(user_message_fingerprint)
 
         # if the count doesn't change, someone is trying to upvote a single
-        # commen more that once.
+        # comment more that once.
         if len(self.hll) == self.telegram_cardinality:
             self.adapter.bot.sendMessage(chat_id=message.chat_id,
                                          text=DUPLICATE_KARMA)
