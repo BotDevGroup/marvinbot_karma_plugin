@@ -9,6 +9,7 @@ import logging
 import json
 import tabulate
 import re
+import hyperloglog
 
 tabulate.MIN_PADDING = 0
 
@@ -23,6 +24,9 @@ class KarmaPlugin(Plugin):
     def __init__(self):
         super(KarmaPlugin, self).__init__('karma')
         self.config = {}
+
+        self.telegram_cardinality = 0
+        self.hll = hyperloglog.HyperLogLog(0.01)  #1% counting error
 
     def get_default_config(self):
         return {
@@ -266,19 +270,44 @@ class KarmaPlugin(Plugin):
 
     def do_vote(self, update, vote):
         message = update.effective_message
+        reply_message = message.reply_to_message
 
-        if message.from_user.id == message.reply_to_message.from_user.id:
+        if message.from_user.id == reply_message.from_user.id:
             self.adapter.bot.sendMessage(chat_id=message.chat_id,
                                          text=NOT_POSSIBLE)
             return
 
+        if (re.match(UPVOTE_PATTERN, reply_message.text) or
+                re.match(DOWNVOTE_PATTERN, reply_message.text)):
+            self.adapter.bot.sendMessage(chat_id=message.chat_id,
+                                         text=NOT_POSSIBLE)
+            return
+
+        # Also, we don't want a user to upvote a message more thatn once.
+        # For that we'll use a randomized algorithm called Hyperloglog.
+        user_message_fingerprint = "{}-{}".format(reply_message.message_id, message.from_user.id)
+
+        # compute the user-message-fingerprint into the cardinality set
+        self.hll.add(user_message_fingerprint)
+
+        # if the count doesn't change, someone is trying to upvote a single
+        # comment more that once.
+        if len(self.hll) == self.telegram_cardinality:
+            self.adapter.bot.sendMessage(chat_id=message.chat_id,
+                                         text=DUPLICATE_KARMA)
+            return
+
+        # If we hit this line, we should increase the cardinality to mark
+        # this message as computed.
+        self.telegram_cardinality += 1
+
         fields = {
             'chat_id': message.chat_id,
-            'message_text': message.reply_to_message.text,
+            'message_text': reply_message.text,
             'giver_first_name': message.from_user.first_name,
             'giver_user_id': message.from_user.id,
-            'receiver_first_name': message.reply_to_message.from_user.first_name,
-            'receiver_user_id': message.reply_to_message.from_user.id,
+            'receiver_first_name': reply_message.from_user.first_name,
+            'receiver_user_id': reply_message.from_user.id,
             'vote': vote
         }
 
