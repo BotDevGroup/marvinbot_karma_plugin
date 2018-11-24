@@ -277,11 +277,12 @@ class KarmaPlugin(Plugin):
                                          text=NOT_POSSIBLE)
             return
 
-        if (re.match(UPVOTE_PATTERN, reply_message.text) or
-                re.match(DOWNVOTE_PATTERN, reply_message.text)):
-            self.adapter.bot.sendMessage(chat_id=message.chat_id,
-                                         text=NOT_POSSIBLE)
-            return
+        if reply_message.text is not None:
+            if (re.match(UPVOTE_PATTERN, reply_message.text) or
+                    re.match(DOWNVOTE_PATTERN, reply_message.text)):
+                self.adapter.bot.sendMessage(chat_id=message.chat_id,
+                                             text=NOT_POSSIBLE)
+                return
 
         # Also, we don't want a user to upvote a message more thatn once.
         # For that we'll use a randomized algorithm called Hyperloglog.
