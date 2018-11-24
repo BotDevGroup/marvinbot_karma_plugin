@@ -64,7 +64,7 @@ class KarmaPlugin(Plugin):
             'karmareport', self.on_karmareport_command,
             command_description='Displays the karma report.')
             .add_argument('--inline', help='Displays the karma report inline.', action='store_true')
-            .add_argument('--global', help='Displays the global karma report.', action='store_false')
+            .add_argument('--global', help='Displays the global karma report.', action='store_true')
         )
         self.add_handler(MessageHandler([
             CommonFilters.text,
@@ -90,7 +90,7 @@ class KarmaPlugin(Plugin):
     def on_karmareport_command(self, update, **kwargs):
         message = update.effective_message
         inline = kwargs.get('inline')
-        show_global = kwargs.get('global')
+        show_global = kwargs.get('global', False)
         chat_id = message.chat.id if show_global is False else None
 
         if not inline:
