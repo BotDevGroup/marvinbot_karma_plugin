@@ -64,6 +64,7 @@ class KarmaPlugin(Plugin):
             'karmareport', self.on_karmareport_command,
             command_description='Displays the karma report.')
             .add_argument('--inline', help='Displays the karma report inline.', action='store_true')
+            .add_argument('--global', help='Displays the global karma report.', action='store_false')
         )
         self.add_handler(MessageHandler([
             CommonFilters.text,
@@ -86,19 +87,25 @@ class KarmaPlugin(Plugin):
         results.sort(key=lambda result: result.get('love_received'), reverse=True)
         return results
 
-    def on_karmareport_command(self, update, inline):
+    def on_karmareport_command(self, update, inline, **kwargs):
         message = update.effective_message
         chat_id = message.chat.id
+        show_global = kwargs.get('global')
 
-        results = KarmaPlugin.get_karma_report(chat_id)
+        results = KarmaPlugin.get_karma_report(chat_id if show_global is False else None)
         if len(results) == 0:
             message.reply_text(text=NO_KARMA)
             return
 
         if not inline:
-            text = "[View report]({}/plugins/{}/{})".format(self.config.get('base_url'), self.name, chat_id)
-            message.reply_text(text=text, disable_web_page_preview=True, parse_mode='Markdown')
-            return
+            if show_global:
+                text = "[View report]({}/plugins/{})".format(self.config.get('base_url'), self.name)
+                message.reply_text(text=text, disable_web_page_preview=True, parse_mode='Markdown')
+                return
+            else:
+                text = "[View report]({}/plugins/{}/{})".format(self.config.get('base_url'), self.name, chat_id)
+                message.reply_text(text=text, disable_web_page_preview=True, parse_mode='Markdown')
+                return
 
         table = tabulate.tabulate([
             [
