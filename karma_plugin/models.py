@@ -29,9 +29,13 @@ class Karma(mongoengine.Document):
     message_text = mongoengine.StringField(null=True)
 
     giver_first_name = mongoengine.StringField(required=True)
+    giver_last_name = mongoengine.StringField(required=False)
+    giver_username = mongoengine.StringField(required=False)
     giver_user_id = mongoengine.LongField(required=True)
 
     receiver_first_name = mongoengine.StringField(required=True)
+    receiver_last_name = mongoengine.StringField(required=False)
+    receiver_username = mongoengine.StringField(required=False)
     receiver_user_id = mongoengine.LongField(required=True)
 
     vote = mongoengine.IntField(required=True)
@@ -43,11 +47,13 @@ class Karma(mongoengine.Document):
         return localized_date() - timedelta(days=90)
 
     @classmethod
-    def get_report(cls, chat_id):
+    def get_report(cls, chat_id=None):
         map_f = """
 function () {
     emit(this.receiver_user_id, {
         first_name: this.receiver_first_name,
+        last_name: this.receiver_last_name,
+        username: this.receiver_username,
         hate_received: this.vote < 0 ? 1 : 0,
         love_received: this.vote > 0 ? 1 : 0,
         hate_given: 0,
@@ -55,6 +61,8 @@ function () {
     })
     emit(this.giver_user_id, {
         first_name: this.giver_first_name,
+        last_name: this.giver_last_name,
+        username: this.giver_username,
         hate_given: this.vote < 0 ? 1 : 0,
         love_given: this.vote > 0 ? 1 : 0,
         hate_received: 0,
@@ -80,7 +88,9 @@ function (key, values) {
     })
 
     return {
-        first_name: values[0].first_name,
+        first_name: values[values.length - 1].first_name,
+        last_name: values[values.length - 1].last_name,
+        username: values[values.length - 1].username,
         love_given,
         hate_given,
         love_received,
@@ -89,10 +99,12 @@ function (key, values) {
 }
 """
         try:
-            return cls.objects(
-                chat_id=chat_id,
-                date_added__gte=Karma.get_last_quarter()
-            ).map_reduce(map_f, reduce_f, 'inline')
+            query = {
+                'date_added__gte': Karma.get_last_quarter()
+            }
+            if chat_id is not None:
+                query['chat_id'] = chat_id
+            return cls.objects(**query).map_reduce(map_f, reduce_f, 'inline')
         except:
             return None
 
