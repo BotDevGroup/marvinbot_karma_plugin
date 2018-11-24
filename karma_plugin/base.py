@@ -87,25 +87,24 @@ class KarmaPlugin(Plugin):
         results.sort(key=lambda result: result.get('love_received'), reverse=True)
         return results
 
-    def on_karmareport_command(self, update, inline, **kwargs):
+    def on_karmareport_command(self, update, **kwargs):
         message = update.effective_message
-        chat_id = message.chat.id
+        inline = kwargs.get('inline')
         show_global = kwargs.get('global')
-
-        results = KarmaPlugin.get_karma_report(chat_id if show_global is False else None)
-        if len(results) == 0:
-            message.reply_text(text=NO_KARMA)
-            return
+        chat_id = message.chat.id if show_global is False else None
 
         if not inline:
             if show_global:
                 text = "[View report]({}/plugins/{})".format(self.config.get('base_url'), self.name)
-                message.reply_text(text=text, disable_web_page_preview=True, parse_mode='Markdown')
-                return
             else:
                 text = "[View report]({}/plugins/{}/{})".format(self.config.get('base_url'), self.name, chat_id)
-                message.reply_text(text=text, disable_web_page_preview=True, parse_mode='Markdown')
-                return
+            message.reply_text(text=text, disable_web_page_preview=True, parse_mode='Markdown')
+            return
+
+        results = KarmaPlugin.get_karma_report(chat_id)
+        if len(results) == 0:
+            message.reply_text(text=NO_KARMA)
+            return
 
         table = tabulate.tabulate([
             [
