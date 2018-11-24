@@ -29,9 +29,13 @@ class Karma(mongoengine.Document):
     message_text = mongoengine.StringField(null=True)
 
     giver_first_name = mongoengine.StringField(required=True)
+    giver_last_name = mongoengine.StringField(required=False)
+    giver_username = mongoengine.StringField(required=False)
     giver_user_id = mongoengine.LongField(required=True)
 
     receiver_first_name = mongoengine.StringField(required=True)
+    receiver_last_name = mongoengine.StringField(required=False)
+    receiver_username = mongoengine.StringField(required=False)
     receiver_user_id = mongoengine.LongField(required=True)
 
     vote = mongoengine.IntField(required=True)
