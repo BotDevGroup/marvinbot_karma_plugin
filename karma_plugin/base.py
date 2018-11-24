@@ -82,7 +82,7 @@ class KarmaPlugin(Plugin):
         return karma_app
 
     @staticmethod
-    def get_karma_report(chat_id):
+    def get_karma_report(chat_id=None):
         results = [result.value for result in list(Karma.get_report(chat_id))]
         results.sort(key=lambda result: result.get('love_received'), reverse=True)
         return results
