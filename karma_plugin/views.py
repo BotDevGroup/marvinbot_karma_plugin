@@ -4,6 +4,10 @@ from marvinbot.utils import localized_date
 
 karma_app = Blueprint('karma', __name__, template_folder='templates')
 
+@karma_app.route('/', methods=['GET'])
+def karmareport_global(chat_id):
+    date = localized_date()
+    return render_template('karmareport.html', title='Global', report=KarmaPlugin.get_karma_report(), date=date)
 
 @karma_app.route('/<chat_id>', methods=['GET'])
 def karmareport(chat_id):
