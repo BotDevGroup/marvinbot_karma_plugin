@@ -95,7 +95,7 @@ class KarmaPlugin(Plugin):
 
         if not inline:
             if show_global:
-                text = "[View report]({}/plugins/{})".format(self.config.get('base_url'), self.name)
+                text = "[View global report]({}/plugins/{})".format(self.config.get('base_url'), self.name)
             else:
                 text = "[View report]({}/plugins/{}/{})".format(self.config.get('base_url'), self.name, chat_id)
             message.reply_text(text=text, disable_web_page_preview=True, parse_mode='Markdown')
