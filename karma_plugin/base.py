@@ -312,8 +312,12 @@ class KarmaPlugin(Plugin):
             'chat_id': message.chat_id,
             'message_text': reply_message.text,
             'giver_first_name': message.from_user.first_name,
+            'giver_last_name': message.from_user.last_name,
+            'giver_username': message.from_user.username,
             'giver_user_id': message.from_user.id,
             'receiver_first_name': reply_message.from_user.first_name,
+            'receiver_last_name': reply_message.from_user.last_name,
+            'receiver_username': reply_message.from_user.username,
             'receiver_user_id': reply_message.from_user.id,
             'vote': vote
         }
