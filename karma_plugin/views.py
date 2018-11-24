@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template
+from flask import Blueprint, render_template, abort
 from karma_plugin import KarmaPlugin
 from marvinbot.utils import localized_date
 
@@ -11,6 +11,11 @@ def karmareport_global():
 
 @karma_app.route('/<chat_id>', methods=['GET'])
 def karmareport(chat_id):
-    chat = getattr(karma_app, 'adapter').bot.getChat(chat_id)
+    try:
+        chat = getattr(karma_app, 'adapter').bot.getChat(chat_id)
+    except:
+        # Render 404 Not Found page
+        abort(404)
+        return
     date = localized_date()
     return render_template('karmareport.html', title=chat.title, report=KarmaPlugin.get_karma_report(int(chat_id)), date=date)
