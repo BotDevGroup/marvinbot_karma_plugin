@@ -272,10 +272,10 @@ class KarmaPlugin(Plugin):
         message = update.effective_message
         reply_message = message.reply_to_message
 
-        #if message.from_user.id == reply_message.from_user.id:
-        #    self.adapter.bot.sendMessage(chat_id=message.chat_id,
-        #                                 text=NOT_POSSIBLE)
-        #    return
+        if message.from_user.id == reply_message.from_user.id:
+            self.adapter.bot.sendMessage(chat_id=message.chat_id,
+                                         text=NOT_POSSIBLE)
+            return
 
         if (re.match(UPVOTE_PATTERN, reply_message.text) or
                 re.match(DOWNVOTE_PATTERN, reply_message.text)):
