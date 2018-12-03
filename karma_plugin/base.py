@@ -278,10 +278,10 @@ class KarmaPlugin(Plugin):
         message = update.effective_message
         reply_message = message.reply_to_message
 
-        if message.from_user.id == reply_message.from_user.id:
-            self.adapter.bot.sendMessage(chat_id=message.chat_id,
-                                         text=NOT_POSSIBLE)
-            return
+        #if message.from_user.id == reply_message.from_user.id:
+        #    self.adapter.bot.sendMessage(chat_id=message.chat_id,
+        #                                 text=NOT_POSSIBLE)
+        #    return
 
         if reply_message.text is not None:
             if (re.match(UPVOTE_PATTERN, reply_message.text) or
@@ -290,9 +290,9 @@ class KarmaPlugin(Plugin):
                                              text=NOT_POSSIBLE)
                 return
 
-        # Also, we don't want a user to upvote a message more thatn once.
+        # Also, we don't want a user to upvote a message more than once.
         # For that we'll use a randomized algorithm called Hyperloglog.
-        user_message_fingerprint = "{}-{}".format(reply_message.message_id, message.from_user.id)
+        user_message_fingerprint = "{}-{}-{}".format(message.chat_id, reply_message.message_id, message.from_user.id)
 
         # compute the user-message-fingerprint into the cardinality set
         self.hll.add(user_message_fingerprint)
