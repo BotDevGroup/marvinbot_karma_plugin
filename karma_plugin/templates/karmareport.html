@@ -38,7 +38,7 @@
           {% for item in report %}
           <tr>
               <th scope="row">{{ loop.index }}</th>
-              <td>{{ item['first_name'] }}</td>
+              <td>{% if loop.index == 1 %}🥇 {% elif loop.index == 2 %}🥈 {% elif loop.index == 3 %}🥉 {% endif %}{{ item['first_name'] }}</td>
               <td>{{ item['love_received'] | int }}</td>
               <td>{{ item['hate_received'] | int }}</td>
               <td>{{ item['love_given'] | int }}</td>
